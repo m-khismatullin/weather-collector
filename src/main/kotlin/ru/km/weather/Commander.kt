@@ -5,33 +5,25 @@ import io.quarkus.runtime.QuarkusApplication
 import io.quarkus.runtime.annotations.QuarkusMain
 import jakarta.inject.Inject
 import org.eclipse.microprofile.config.inject.ConfigProperty
-import org.eclipse.microprofile.rest.client.inject.RestClient
+import ru.km.weather.client.ForecastClientHelper
 
 @QuarkusMain
 class Commander : QuarkusApplication {
-    @Inject
-    @RestClient
-    lateinit var weatherClient: WeatherClient
-
-    @ConfigProperty(name = "weather.api.key")
-    lateinit var apiKey: String
-
     @ConfigProperty(name = "weather.city.latitude")
     lateinit var latitude: String
 
     @ConfigProperty(name = "weather.city.longitude")
     lateinit var longitude: String
 
+    @Inject
+    private lateinit var forecastClientHelper: ForecastClientHelper
+
     override fun run(vararg args: String?): Int {
-        Log.info("Receiving data from api.openweathermap.org...")
-        val data = weatherClient.getData(
-            apiKey,
-            latitude,
-            longitude,
-            "metric",
-            "ru",
-        )
-        Log.info(data.city)
+        val data = forecastClientHelper
+            .getForecastForPosition(latitude, longitude)
+            .await()
+            .indefinitely()
+        Log.info("Weather data for latitude=${latitude} longitude=${longitude}: ${data.city}")
 
         return 1
     }
