@@ -1,0 +1,27 @@
+weather:
+  api:
+    key:  a7337a15a15764b5814e0ecf172a1f61
+  city:
+    latitude:  54.864703
+    longitude:  55.744475
+  url:
+    geo:  "https://api.openweathermap.org/data/2.5/forecast?units=metric
+      &lang=ru
+      &appid={{weather.api.key}}
+      &lat={{weather.api.city.lat}}
+      &lon={{weather.api.city.lon}}"
+quarkus:
+#  log:
+#    category:
+#      "org.jboss.resteasy.reactive.client.logging":
+#        level:  DEBUG
+  rest-client:
+    read-timeout: 90000
+#    logging:
+#      scope:  request-response
+#      body-limit: 1024
+    weather-api:
+#      verify-host:  false
+      scope:  jakarta.inject.Singleton
+    "ru.km.weather.WeatherClient":
+      url:  https://api.openweathermap.org/data/2.5
