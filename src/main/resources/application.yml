@@ -7,13 +7,13 @@ weather:
     latitude:  54.864703
     longitude:  55.744475
 quarkus:
-#  datasource:
-#    db-kind:  postgresql
-#    username: user
-#    password: pass
-#  hibernate-orm:
-#    database:
-#      generation: drop-and-create
+  datasource:
+    db-kind:  postgresql
+    username: user
+    password: pass
+  hibernate-orm:
+    database:
+      generation: drop-and-create
 #  log:
 #    category:
 #      "org.jboss.resteasy.reactive.client.logging":

@@ -1,22 +1,27 @@
 package ru.km.weather.entity
 
+import io.quarkus.hibernate.reactive.panache.kotlin.PanacheCompanion
+import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntity
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Entity
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import ru.km.weather.dto.ForecastDto
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-//@Entity
-//class Forecast() : PanacheEntity() {
-class Forecast() {
-//    companion object : PanacheCompanion<Forecast>
+@Entity
+class Forecast() : PanacheEntity() {
+    companion object : PanacheCompanion<Forecast>
 
     lateinit var receiveDate: ZonedDateTime
 
-    //    @ManyToOne
+    @ManyToOne(cascade = [CascadeType.ALL])
     lateinit var city: City
 
-    //    @OneToMany
+    @OneToMany(cascade = [CascadeType.ALL])
     lateinit var data: MutableList<ForecastDatum>
 
     constructor(forecastDto: ForecastDto) : this() {
@@ -32,7 +37,6 @@ class Forecast() {
     }
 
     override fun toString(): String {
-        return "Forecast(receiveDate=$receiveDate, city=$city, data=$data)"
-//        return "Forecast(id=$id, receiveDate=$receiveDate, city=$city, data=$data)"
+        return "Forecast(id=$id, receiveDate=$receiveDate, city=$city, data=$data)"
     }
 }

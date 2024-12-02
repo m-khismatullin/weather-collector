@@ -12,7 +12,7 @@ data class ForecastDto(
 )
 
 data class CityDto(
-    val id: Int,
+    val id: Long,
     val name: String,
     val coord: CoordDto,
     val country: String,

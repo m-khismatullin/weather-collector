@@ -1,11 +1,9 @@
 package ru.km.weather
 
-import io.quarkus.logging.Log
 import io.quarkus.runtime.QuarkusApplication
 import io.quarkus.runtime.annotations.QuarkusMain
 import jakarta.inject.Inject
 import org.eclipse.microprofile.config.inject.ConfigProperty
-import ru.km.weather.client.ForecastClientHelper
 import ru.km.weather.service.ForecastService
 
 @QuarkusMain
@@ -20,13 +18,15 @@ class Commander : QuarkusApplication {
     private lateinit var forecastService: ForecastService
 
     override fun run(vararg args: String?): Int {
-//        val data = forecastClientHelper
-//            .getForecastForPosition(latitude, longitude)
-//            .await()
-//            .indefinitely()
-//        Log.info("Weather data for latitude=${latitude} longitude=${longitude}: ${data.city}")
-        val forecast = forecastService.getForecast(latitude, longitude)
-        println(forecast.await().indefinitely())
+        val forecast = forecastService.getForecast(latitude, longitude).await().indefinitely()
+        println("receiveDate=${with(forecast.receiveDate){
+            "${this.toLocalDate()} ${this.hour}:${this.minute}"
+        }}\n${forecast.city.name}")
+        forecast.data
+            .map {
+                "\t${it.weatherDate.toLocalDate()} ${it.weatherDate.hour.toString().padStart(2,'0')} : ${it.temperature} : ${it.description}"
+            }
+            .forEach { println(it) }
 
         return 1
     }
