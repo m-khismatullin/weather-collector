@@ -6,6 +6,7 @@ import io.quarkus.runtime.annotations.QuarkusMain
 import jakarta.inject.Inject
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import ru.km.weather.client.ForecastClientHelper
+import ru.km.weather.service.ForecastService
 
 @QuarkusMain
 class Commander : QuarkusApplication {
@@ -16,14 +17,16 @@ class Commander : QuarkusApplication {
     lateinit var longitude: String
 
     @Inject
-    private lateinit var forecastClientHelper: ForecastClientHelper
+    private lateinit var forecastService: ForecastService
 
     override fun run(vararg args: String?): Int {
-        val data = forecastClientHelper
-            .getForecastForPosition(latitude, longitude)
-            .await()
-            .indefinitely()
-        Log.info("Weather data for latitude=${latitude} longitude=${longitude}: ${data.city}")
+//        val data = forecastClientHelper
+//            .getForecastForPosition(latitude, longitude)
+//            .await()
+//            .indefinitely()
+//        Log.info("Weather data for latitude=${latitude} longitude=${longitude}: ${data.city}")
+        val forecast = forecastService.getForecast(latitude, longitude)
+        println(forecast.await().indefinitely())
 
         return 1
     }

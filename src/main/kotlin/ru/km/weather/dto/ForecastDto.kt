@@ -17,6 +17,7 @@ data class CityDto(
     val coord: CoordDto,
     val country: String,
     val population: Int,
+    val timezone: Int,
     val sunrise: Int,
     val sunset: Int,
 )
@@ -28,7 +29,7 @@ data class CoordDto(val lat: Double, val lon: Double)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ListDto(
-    val dt: Int,
+    val dt: Long,
     val main: MainDto,
     val weather: List<WeatherDto>,
 //    val clouds: CloudsDto?,
