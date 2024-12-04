@@ -1,6 +1,24 @@
-package ru.km.weather.dto
+package ru.km.weather.collector.dto
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class CurrentWeatherDto(
+    val coord: CoordDto,
+    val weather: List<WeatherDto>,
+    val base: String,
+    val main: MainDto,
+    val visibility: Int,
+    val wind: WindDto,
+    val rain: RainSnowDto?,
+//    val clouds: CloudsDto,
+    val dt: Long,
+    val sys: SysDto,
+    val timezone: Int,
+    val id: Long,
+    val name: String,
+    val cod: String,
+)
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ForecastDto(
@@ -50,7 +68,13 @@ data class MainDto(
 
 data class RainSnowDto(val threeHour: Int)
 
-data class SysDto(val pod: String)
+data class SysDto(
+    val type: Int,
+    val id: Int,
+    val country: String,
+    val sunrise: Long,
+    val sunset: Long,
+)
 
 data class WeatherDto(
     val id: Int,

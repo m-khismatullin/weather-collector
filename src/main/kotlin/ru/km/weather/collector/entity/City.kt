@@ -1,15 +1,19 @@
-package ru.km.weather.entity
+package ru.km.weather.collector.entity
 
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheCompanion
-import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntity
+import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Entity
-import ru.km.weather.dto.CityDto
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import ru.km.weather.collector.dto.CityDto
 
 @Entity
-class City() : PanacheEntity() {
+class City() : PanacheEntityBase {
     companion object : PanacheCompanion<City>
 
-    var extId: Long = 0
+    @Id
+    var id: Long = 0L
     lateinit var name: String
     lateinit var country: String
     var latitude: Double = 0.0
@@ -17,7 +21,7 @@ class City() : PanacheEntity() {
 
     constructor(cityDto: CityDto) : this() {
         cityDto.let { dto ->
-            this.extId = dto.id
+            this.id = dto.id
             this.name = dto.name
             this.country = dto.country
             this.latitude = dto.coord.lat
@@ -26,6 +30,6 @@ class City() : PanacheEntity() {
     }
 
     override fun toString(): String {
-        return "City(id=$id, extId=${extId}, name='$name', country='$country', latitude=$latitude, longitude=$longitude)"
+        return "City(id=$id, name='$name', country='$country', latitude=$latitude, longitude=$longitude)"
     }
 }

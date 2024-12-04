@@ -26,5 +26,5 @@ quarkus:
     weather-api:
 #      verify-host:  false
       scope:  jakarta.inject.Singleton
-    "ru.km.weather.client.ForecastClient":
+    "ru.km.weather.collector.rest.OpenWeatherMapClient":
       url:  https://api.openweathermap.org/data/2.5

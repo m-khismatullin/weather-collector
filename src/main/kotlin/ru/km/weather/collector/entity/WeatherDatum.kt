@@ -1,17 +1,16 @@
-package ru.km.weather.entity
+package ru.km.weather.collector.entity
 
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheCompanion
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntity
 import jakarta.persistence.Entity
-import ru.km.weather.dto.ListDto
+import ru.km.weather.collector.dto.ListDto
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 @Entity
-class ForecastDatum() : PanacheEntity() {
-    companion object : PanacheCompanion<ForecastDatum>
-
+class WeatherDatum() : PanacheEntity() {
+    companion object : PanacheCompanion<WeatherDatum>
 
     lateinit var weatherDate: ZonedDateTime
     var temperature: Double = 0.0
