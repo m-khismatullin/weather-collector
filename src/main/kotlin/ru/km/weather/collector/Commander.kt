@@ -1,15 +1,9 @@
 package ru.km.weather.collector
 
-import io.quarkus.hibernate.reactive.panache.Panache
 import io.quarkus.runtime.QuarkusApplication
-import io.quarkus.runtime.annotations.QuarkusMain
-import io.quarkus.vertx.VertxContextSupport
 import io.vertx.core.Vertx
 import jakarta.inject.Inject
 import org.eclipse.microprofile.config.inject.ConfigProperty
-import ru.km.weather.collector.entity.City
-import ru.km.weather.collector.entity.CurrentWeather
-import ru.km.weather.collector.entity.Forecast
 import ru.km.weather.collector.service.OpenWeatherMapService
 
 //@QuarkusMain

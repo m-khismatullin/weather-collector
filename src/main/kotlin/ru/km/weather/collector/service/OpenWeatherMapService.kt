@@ -9,9 +9,10 @@ import jakarta.inject.Inject
 import org.eclipse.microprofile.reactive.messaging.Channel
 import org.eclipse.microprofile.reactive.messaging.Emitter
 import ru.km.weather.collector.entity.City
-import ru.km.weather.collector.entity.CurrentWeather
+import ru.km.weather.collector.entity.Weather
 import ru.km.weather.collector.entity.Forecast
 import ru.km.weather.collector.rest.OpenWeatherMapClientHelper
+import ru.km.weather.collector.util.WeatherConfig
 
 
 @ApplicationScoped
@@ -25,7 +26,7 @@ class OpenWeatherMapService {
 
     @Inject
     @Channel("weather")
-    private lateinit var currentWeatherEmitter: Emitter<CurrentWeather>
+    private lateinit var weatherEmitter: Emitter<Weather>
 
     @Inject
     private lateinit var vertx: Vertx
@@ -49,7 +50,7 @@ class OpenWeatherMapService {
                         }
                         .onItem()
                         .ifNotNull()
-                        .call { forecast -> forecast.persist<Forecast>() }
+                        .call { it -> it.persist<Forecast>() }
                         .onItem()
                         .ifNull()
                         .switchTo {
@@ -60,33 +61,33 @@ class OpenWeatherMapService {
             .invoke { forecast -> forecastEmitter.send(forecast) }
     }
 
-    fun getWeather(latitude: String, longitude: String): Uni<CurrentWeather> {
+    fun getWeather(latitude: String, longitude: String): Uni<Weather> {
         return openWeatherMapClientHelper
-            .getWeatherForPosition(latitude, longitude)
+            .getCurrentForPosition(latitude, longitude)
             .onItem()
-            .transform { CurrentWeather(it) }
-            .call { currentWeather ->
+            .transform { Weather(it) }
+            .call { weather ->
                 VertxContextSafetyToggle.setContextSafe(vertx.getOrCreateContext(), true)
                 Panache.withTransaction {
-                    City.findById(currentWeather.city.id)
+                    City.findById(weather.city.id)
                         .onItem()
                         .ifNotNull()
                         .transform { city ->
                             city?.let {
-                                currentWeather.city = city
-                                currentWeather
+                                weather.city = city
+                                weather
                             }
                         }
                         .onItem()
                         .ifNotNull()
-                        .call { currentWeather -> currentWeather.persist<CurrentWeather>() }
+                        .call { it -> it.persist<Weather>() }
                         .onItem()
                         .ifNull()
                         .switchTo {
-                            currentWeather.persist<CurrentWeather>()
+                            weather.persist<Weather>()
                         }
                 }
             }
-            .invoke { currentWeather -> currentWeatherEmitter.send(currentWeather) }
+            .invoke { currentWeather -> weatherEmitter.send(currentWeather) }
     }
 }

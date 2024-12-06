@@ -3,14 +3,15 @@ package ru.km.weather.collector.dto
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class CurrentWeatherDto(
+data class CurrentDto(
     val coord: CoordDto,
     val weather: List<WeatherDto>,
     val base: String,
     val main: MainDto,
     val visibility: Int,
-    val wind: WindDto,
+    val wind: WindDto?,
     val rain: RainSnowDto?,
+    val snow: RainSnowDto?,
 //    val clouds: CloudsDto,
     val dt: Long,
     val sys: SysDto,
@@ -51,7 +52,10 @@ data class ListDto(
     val main: MainDto,
     val weather: List<WeatherDto>,
 //    val clouds: CloudsDto?,
-    val wind: WindDto,
+    val wind: WindDto?,
+    val visibility: Int,
+    val rain: RainSnowDto?,
+    val snow: RainSnowDto?,
 )
 
 data class MainDto(

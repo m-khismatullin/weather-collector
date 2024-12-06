@@ -3,8 +3,6 @@ package ru.km.weather.collector.entity
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheCompanion
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import ru.km.weather.collector.dto.CityDto
 
@@ -18,6 +16,7 @@ class City() : PanacheEntityBase {
     lateinit var country: String
     var latitude: Double = 0.0
     var longitude: Double = 0.0
+    var timezone: Int = 0
 
     constructor(cityDto: CityDto) : this() {
         cityDto.let { dto ->
@@ -26,10 +25,11 @@ class City() : PanacheEntityBase {
             this.country = dto.country
             this.latitude = dto.coord.lat
             this.longitude = dto.coord.lon
+            this.timezone = dto.timezone
         }
     }
 
     override fun toString(): String {
-        return "City(id=$id, name='$name', country='$country', latitude=$latitude, longitude=$longitude)"
+        return "City(id=$id, name='$name', country='$country', latitude=$latitude, longitude=$longitude, timezone=$timezone)"
     }
 }

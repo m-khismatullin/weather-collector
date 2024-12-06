@@ -5,7 +5,7 @@ import jakarta.ws.rs.GET
 import jakarta.ws.rs.Path
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 import org.jboss.resteasy.reactive.RestQuery
-import ru.km.weather.collector.dto.CurrentWeatherDto
+import ru.km.weather.collector.dto.CurrentDto
 import ru.km.weather.collector.dto.ForecastDto
 
 @RegisterRestClient(configKey = "weather-api")
@@ -22,11 +22,11 @@ interface OpenWeatherMapClient {
 
     @GET
     @Path("/weather")
-    fun getWeather(
+    fun getCurrent(
         @RestQuery("appid") apiKey: String,
         @RestQuery("lat") latitude: String,
         @RestQuery("lon") longitude: String,
         @RestQuery("units") measureUnits: String,
         @RestQuery("lang") language: String,
-    ): Uni<CurrentWeatherDto>
+    ): Uni<CurrentDto>
 }

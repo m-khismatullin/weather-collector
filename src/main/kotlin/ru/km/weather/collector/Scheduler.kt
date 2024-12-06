@@ -4,24 +4,23 @@ import io.quarkus.logging.Log
 import io.quarkus.scheduler.Scheduled
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.eclipse.microprofile.config.inject.ConfigProperty
 import ru.km.weather.collector.service.OpenWeatherMapService
+import ru.km.weather.collector.util.WeatherConfig
 import java.time.LocalDateTime
 
 @ApplicationScoped
 class Scheduler {
-    @ConfigProperty(name = "weather.city.latitude")
-    lateinit var latitude: String
-
-    @ConfigProperty(name = "weather.city.longitude")
-    lateinit var longitude: String
+    @Inject
+    lateinit var weatherConfig: WeatherConfig
 
     @Inject
     private lateinit var openWeatherMapService: OpenWeatherMapService
 
     @Scheduled(every = "1m")
-    fun scheduleCurrentWeather() {
-        openWeatherMapService.getWeather(latitude, longitude).await().indefinitely()
-        Log.info(LocalDateTime.now())
+    fun scheduleCurrent() {
+        openWeatherMapService
+            .getWeather(weatherConfig.city().latitude(), weatherConfig.city().longitude())
+            .subscribe()
+            .with { Log.info("current weather scheduler run at ${LocalDateTime.now()}") }
     }
 }

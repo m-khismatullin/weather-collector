@@ -3,45 +3,38 @@ package ru.km.weather.collector.entity
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheCompanion
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntity
 import jakarta.persistence.*
-import ru.km.weather.collector.dto.CurrentWeatherDto
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZoneOffset
+import ru.km.weather.collector.dto.CurrentDto
+import ru.km.weather.collector.dto.ListDto
+import ru.km.weather.collector.util.Util
 import java.time.ZonedDateTime
 
 @Entity
-class CurrentWeather() : PanacheEntity() {
-    companion object : PanacheCompanion<CurrentWeather>
+class Weather() : PanacheEntity() {
+    companion object : PanacheCompanion<Weather>
 
-    lateinit var receiveDate: ZonedDateTime
+    @get:Transient
+    val weatherDate: ZonedDateTime
+        get() = Util.unixTimeToZoned(data.unixTime, city.timezone)
 
     @ManyToOne(cascade = [CascadeType.ALL])
     lateinit var city: City
 
-    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
-    lateinit var datum: WeatherDatum
+    @Embedded
+    lateinit var data: Data
 
-    constructor(currentWeatherDto: CurrentWeatherDto) : this() {
-        currentWeatherDto.let { dto ->
-            val zoneOffset = ZoneOffset.ofTotalSeconds(dto.timezone)
-            this.receiveDate = ZonedDateTime.ofInstant(
-                Instant.now(),
-                ZoneId.ofOffset("", zoneOffset)
-            )
-
+    constructor(currentDto: CurrentDto) : this() {
+        currentDto.let { dto ->
             this.city = City().apply {
                 this.id = dto.id
                 this.name = dto.name
                 this.country = dto.sys.country
                 this.latitude = dto.coord.lat
                 this.longitude = dto.coord.lon
+                this.timezone = dto.timezone
             }
 
-            this.datum = WeatherDatum().apply {
-                this.weatherDate = ZonedDateTime.ofInstant(
-                    Instant.ofEpochSecond(dto.dt),
-                    zoneOffset
-                )
+            this.data = Data().apply {
+                this.unixTime = dto.dt
                 this.temperature = dto.main.temp
                 this.feelsLike = dto.main.feelsLike
                 this.pressure = dto.main.pressure
@@ -53,22 +46,27 @@ class CurrentWeather() : PanacheEntity() {
         }
     }
 
+    constructor(city: City, listDto: ListDto) : this() {
+        this.city = city
+        this.data = Data(listDto)
+    }
+
     fun print() {
         println(
             "id=$id : receiveDate=${
-                with(this.receiveDate) {
+                with(this.weatherDate) {
                     "${this.toLocalDate()} ${this.hour}:${this.minute}"
                 }
             } : ${this.city.name} : ${
-                with(this.datum) {
-                    "t${weatherDate.toLocalDate()} ${
+                with(this.data) {
+                    "${weatherDate.toLocalDate()} ${
                         weatherDate.hour.toString().padStart(2, '0')
-                    } : ${temperature} : ${description}"
+                    } : $temperature : $description"
                 }
             }")
     }
 
     override fun toString(): String {
-        return "CurrentWeather(id=$id, receiveDate=$receiveDate, city=$city, datum=$datum)"
+        return "CurrentWeather(id=$id, weatherDate=$weatherDate, city=$city, data=$data)"
     }
 }
