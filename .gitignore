@@ -1,3 +1,5 @@
+src/main/kotlin/ru/km/weather/collector/Commander.kt
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
