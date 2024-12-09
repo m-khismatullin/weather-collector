@@ -45,6 +45,7 @@ class OpenWeatherMapService {
                         .transform { city ->
                             city?.let {
                                 forecast.city = city
+                                forecast.dataList.forEach { it.city = city }
                                 forecast
                             }
                         }
