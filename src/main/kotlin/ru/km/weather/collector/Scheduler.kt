@@ -4,7 +4,11 @@ import io.quarkus.logging.Log
 import io.quarkus.scheduler.Scheduled
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.km.weather.collector.service.OpenWeatherMapService
+import ru.km.weather.collector.service.WeatherSubscriberService
 import ru.km.weather.collector.util.WeatherConfig
 import java.time.LocalDateTime
 
@@ -16,19 +20,48 @@ class Scheduler {
     @Inject
     private lateinit var openWeatherMapService: OpenWeatherMapService
 
+    @Inject
+    private lateinit var weatherSubscriberService: WeatherSubscriberService
+
     @Scheduled(every = "1m")
-    fun scheduleCurrent() {
-        openWeatherMapService
-            .getWeather(weatherConfig.city().latitude(), weatherConfig.city().longitude())
-            .subscribe()
-            .with { Log.info("current weather scheduler run at ${LocalDateTime.now()}") }
+//    @Scheduled(every = "10s")
+    suspend fun scheduleCurrent() {
+        val uniList = weatherSubscriberService
+            .subscribers
+            .map { subscriber ->
+                openWeatherMapService.getWeather(subscriber.lat, subscriber.lon)
+            }
+            .toList()
+
+        withContext(Dispatchers.IO) {
+            uniList.forEach {
+                launch {
+                    it.subscribe().with {
+                        Log.info("current weather for ${it.city} run at ${LocalDateTime.now()}")
+                    }
+                }
+            }
+        }
     }
 
-    @Scheduled(every = "30m")
-    fun scheduleForecast() {
-        openWeatherMapService
-            .getForecast(weatherConfig.city().latitude(), weatherConfig.city().longitude())
-            .subscribe()
-            .with { Log.info("forecast scheduler run at ${LocalDateTime.now()}") }
+    //    @Scheduled(every = "30m")
+//    @Scheduled(every = "1m")
+    suspend fun scheduleForecast() {
+        val uniList = weatherSubscriberService
+            .subscribers
+            .map { subscriber ->
+                openWeatherMapService.getForecast(subscriber.lat, subscriber.lon)
+            }
+            .toList()
+
+        withContext(Dispatchers.IO) {
+            uniList.forEach {
+                launch {
+                    it.subscribe().with {
+                        Log.info("forecast scheduler for ${it.city} run at ${LocalDateTime.now()}")
+                    }
+                }
+            }
+        }
     }
 }

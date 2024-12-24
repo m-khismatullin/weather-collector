@@ -84,16 +84,20 @@ class OpenWeatherMapService {
                                 weather
                             }
                         }
+                        .onFailure()
+                        .invoke { e -> Log.error(e) }
                         .onItem()
                         .ifNotNull()
                         .call { it -> it.persist<Weather>() }
+                        .onFailure()
+                        .invoke { e -> Log.error(e) }
                         .onItem()
                         .ifNull()
                         .switchTo { weather.persist<Weather>() }
                 }
             }
             .onFailure()
-            .invoke { _ -> Log.error("weather don't send to kafka!") }
+            .invoke { e -> Log.error("weather don't send to kafka: ${e.cause}") }
             .onItem()
             .invoke { currentWeather -> weatherEmitter.send(currentWeather) }
     }

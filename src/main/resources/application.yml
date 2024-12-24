@@ -1,30 +1,35 @@
 weather:
   api:
-    key:  a7337a15a15764b5814e0ecf172a1f61
-    units:  metric
+    key: a7337a15a15764b5814e0ecf172a1f61
+    units: metric
     language: ru
   city:
-    latitude:  54.864703
-    longitude:  55.744475
+    latitude: 54.867
+    longitude: 55.750
+#https://www.openstreetmap.org/#map=19/54.864679/55.744092
 quarkus:
+  swagger-ui:
+    always-include: true
+  http:
+    port: 8080
   datasource:
-    db-kind:  postgresql
+    db-kind: postgresql
     username: user
     password: pass
   hibernate-orm:
     database:
       generation: drop-and-create
-#  log:
-#    category:
-#      "org.jboss.resteasy.reactive.client.logging":
-#        level:  DEBUG
+  #  log:
+  #    category:
+  #      "org.jboss.resteasy.reactive.client.logging":
+  #        level:  DEBUG
   rest-client:
     read-timeout: 90000
-#    logging:
-#      scope:  request-response
-#      body-limit: 1024
+    #    logging:
+    #      scope:  request-response
+    #      body-limit: 1024
     weather-api:
-#      verify-host:  false
-      scope:  jakarta.inject.Singleton
+      #      verify-host:  false
+      scope: jakarta.inject.Singleton
     "ru.km.weather.collector.rest.OpenWeatherMapClient":
-      url:  https://api.openweathermap.org/data/2.5
+      url: https://api.openweathermap.org/data/2.5
