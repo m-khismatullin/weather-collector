@@ -23,4 +23,12 @@ class Scheduler {
             .subscribe()
             .with { Log.info("current weather scheduler run at ${LocalDateTime.now()}") }
     }
+
+    @Scheduled(every = "30m")
+    fun scheduleForecast() {
+        openWeatherMapService
+            .getForecast(weatherConfig.city().latitude(), weatherConfig.city().longitude())
+            .subscribe()
+            .with { Log.info("forecast scheduler run at ${LocalDateTime.now()}") }
+    }
 }

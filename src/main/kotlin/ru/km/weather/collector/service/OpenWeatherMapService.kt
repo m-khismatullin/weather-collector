@@ -1,24 +1,26 @@
 package ru.km.weather.collector.service
 
 import io.quarkus.hibernate.reactive.panache.Panache
+import io.quarkus.logging.Log
 import io.quarkus.vertx.core.runtime.context.VertxContextSafetyToggle
 import io.smallrye.mutiny.Uni
+import io.smallrye.mutiny.infrastructure.Infrastructure
 import io.vertx.core.Vertx
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.eclipse.microprofile.reactive.messaging.Channel
 import org.eclipse.microprofile.reactive.messaging.Emitter
 import ru.km.weather.collector.entity.City
-import ru.km.weather.collector.entity.Weather
 import ru.km.weather.collector.entity.Forecast
+import ru.km.weather.collector.entity.Weather
 import ru.km.weather.collector.rest.OpenWeatherMapClientHelper
-import ru.km.weather.collector.util.WeatherConfig
 
 
 @ApplicationScoped
 class OpenWeatherMapService {
     @Inject
     private lateinit var openWeatherMapClientHelper: OpenWeatherMapClientHelper
+
 
     @Inject
     @Channel("forecast")
@@ -32,6 +34,7 @@ class OpenWeatherMapService {
     private lateinit var vertx: Vertx
 
     fun getForecast(latitude: String, longitude: String): Uni<Forecast> {
+        Infrastructure.setDroppedExceptionHandler { err -> Log.error("getForecast error: ${err.cause}") }
         return openWeatherMapClientHelper
             .getForecastForPosition(latitude, longitude)
             .onItem()
@@ -54,15 +57,17 @@ class OpenWeatherMapService {
                         .call { it -> it.persist<Forecast>() }
                         .onItem()
                         .ifNull()
-                        .switchTo {
-                            forecast.persist<Forecast>()
-                        }
+                        .switchTo { forecast.persist<Forecast>() }
                 }
             }
+            .onFailure()
+            .invoke { _ -> Log.error("forecast don't send to kafka!") }
+            .onItem()
             .invoke { forecast -> forecastEmitter.send(forecast) }
     }
 
     fun getWeather(latitude: String, longitude: String): Uni<Weather> {
+        Infrastructure.setDroppedExceptionHandler { err -> Log.error("getWeather error: ${err.cause}") }
         return openWeatherMapClientHelper
             .getCurrentForPosition(latitude, longitude)
             .onItem()
@@ -84,11 +89,12 @@ class OpenWeatherMapService {
                         .call { it -> it.persist<Weather>() }
                         .onItem()
                         .ifNull()
-                        .switchTo {
-                            weather.persist<Weather>()
-                        }
+                        .switchTo { weather.persist<Weather>() }
                 }
             }
+            .onFailure()
+            .invoke { _ -> Log.error("weather don't send to kafka!") }
+            .onItem()
             .invoke { currentWeather -> weatherEmitter.send(currentWeather) }
     }
 }

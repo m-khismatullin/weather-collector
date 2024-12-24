@@ -4,6 +4,7 @@ import io.quarkus.hibernate.reactive.panache.kotlin.PanacheCompanion
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.Version
 import ru.km.weather.collector.dto.CityDto
 
 @Entity

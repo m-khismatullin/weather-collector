@@ -54,8 +54,8 @@ data class ListDto(
 //    val clouds: CloudsDto?,
     val wind: WindDto?,
     val visibility: Int,
-    val rain: RainSnowDto?,
-    val snow: RainSnowDto?,
+//    val rain: RainSnowDto?,
+//    val snow: RainSnowDto?,
 )
 
 data class MainDto(
