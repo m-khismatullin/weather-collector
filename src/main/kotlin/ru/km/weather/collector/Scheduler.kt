@@ -23,8 +23,8 @@ class Scheduler {
     @Inject
     private lateinit var weatherSubscriberService: WeatherSubscriberService
 
-    @Scheduled(every = "1m")
-//    @Scheduled(every = "10s")
+    //    @Scheduled(every = "1m")
+    @Scheduled(every = "15s")
     suspend fun scheduleCurrent() {
         val uniList = weatherSubscriberService
             .subscribers
@@ -35,13 +35,22 @@ class Scheduler {
 
         withContext(Dispatchers.IO) {
             uniList.forEach {
-                launch {
-                    it.subscribe().with {
-                        Log.info("current weather for ${it.city} run at ${LocalDateTime.now()}")
-                    }
+                it.subscribe().with { weather ->
+                    Log.info("current weather for ${weather.city} run at ${LocalDateTime.now()}")
                 }
             }
         }
+//        // так почему-то не работает!!!
+//        withContext(Dispatchers.IO) {
+//            weatherSubscriberService
+//                .subscribers
+//                .map { openWeatherMapService.getWeather(it.lat, it.lon) }
+//                .forEach {
+//                    it.subscribe().with { w ->
+//                        Log.info("current weather for ${w.city} run at ${LocalDateTime.now()}")
+//                    }
+//                }
+//        }
     }
 
     //    @Scheduled(every = "30m")

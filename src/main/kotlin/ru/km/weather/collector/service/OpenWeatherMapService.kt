@@ -3,6 +3,7 @@ package ru.km.weather.collector.service
 import io.quarkus.hibernate.reactive.panache.Panache
 import io.quarkus.logging.Log
 import io.quarkus.vertx.core.runtime.context.VertxContextSafetyToggle
+import io.smallrye.common.annotation.NonBlocking
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.infrastructure.Infrastructure
 import io.vertx.core.Vertx
@@ -21,7 +22,6 @@ class OpenWeatherMapService {
     @Inject
     private lateinit var openWeatherMapClientHelper: OpenWeatherMapClientHelper
 
-
     @Inject
     @Channel("forecast")
     private lateinit var forecastEmitter: Emitter<Forecast>
@@ -33,7 +33,7 @@ class OpenWeatherMapService {
     @Inject
     private lateinit var vertx: Vertx
 
-    fun getForecast(latitude: String, longitude: String): Uni<Forecast> {
+    suspend fun getForecast(latitude: String, longitude: String): Uni<Forecast> {
         Infrastructure.setDroppedExceptionHandler { err -> Log.error("getForecast error: ${err.cause}") }
         return openWeatherMapClientHelper
             .getForecastForPosition(latitude, longitude)

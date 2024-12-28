@@ -4,7 +4,6 @@ import io.quarkus.hibernate.reactive.panache.kotlin.PanacheCompanion
 import io.quarkus.hibernate.reactive.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import jakarta.persistence.Version
 import ru.km.weather.collector.dto.CityDto
 
 @Entity
@@ -23,7 +22,7 @@ class City() : PanacheEntityBase {
         cityDto.let { dto ->
             this.id = dto.id
             this.name = dto.name
-            this.country = dto.country
+            this.country = dto.country ?: "unknown"
             this.latitude = dto.coord.lat
             this.longitude = dto.coord.lon
             this.timezone = dto.timezone

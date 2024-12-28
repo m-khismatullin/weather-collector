@@ -25,9 +25,9 @@ quarkus:
   #        level:  DEBUG
   rest-client:
     read-timeout: 90000
-    #    logging:
-    #      scope:  request-response
-    #      body-limit: 1024
+    logging:
+      scope: request-response
+      body-limit: 1024
     weather-api:
       #      verify-host:  false
       scope: jakarta.inject.Singleton
