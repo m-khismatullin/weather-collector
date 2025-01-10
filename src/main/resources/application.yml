@@ -8,8 +8,8 @@ weather:
     longitude: 55.750
 #https://www.openstreetmap.org/#map=19/54.864679/55.744092
 quarkus:
-  swagger-ui:
-    always-include: true
+#  swagger-ui:
+#    always-include: true
   http:
     port: 8080
   datasource:
@@ -19,10 +19,11 @@ quarkus:
   hibernate-orm:
     database:
       generation: drop-and-create
-  #  log:
-  #    category:
-  #      "org.jboss.resteasy.reactive.client.logging":
-  #        level:  DEBUG
+    sql-load-script:  scripts/load-data.sql
+#    log:
+#      category:
+#        "org.jboss.resteasy.reactive.client.logging":
+#          level:  DEBUG
   rest-client:
     read-timeout: 90000
     logging:

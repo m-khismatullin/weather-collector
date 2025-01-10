@@ -26,6 +26,11 @@ class Scheduler {
     //    @Scheduled(every = "1m")
     @Scheduled(every = "15s")
     suspend fun scheduleCurrent() {
+//        withContext(Dispatchers.IO) {
+        if (weatherSubscriberService.subscribers.isEmpty())
+            weatherSubscriberService.getSubscribersFormDb()
+//        }
+
         val uniList = weatherSubscriberService
             .subscribers
             .map { subscriber ->

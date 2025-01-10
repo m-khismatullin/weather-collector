@@ -1,0 +1,1 @@
+insert into subscriber (id,name,latitude,longitude) values (0,'manual',54.867,55.750);

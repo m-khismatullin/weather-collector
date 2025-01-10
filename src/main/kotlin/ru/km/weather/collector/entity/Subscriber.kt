@@ -35,6 +35,6 @@ class Subscriber() : PanacheEntity() {
     }
 
     override fun toString(): String {
-        return "Subscriber(name='$name', latitude=$latitude, longitude=$longitude)"
+        return "Subscriber(id=$id, name='$name', latitude=$latitude, longitude=$longitude)"
     }
 }

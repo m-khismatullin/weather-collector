@@ -3,7 +3,6 @@ package ru.km.weather.collector.service
 import io.quarkus.hibernate.reactive.panache.Panache
 import io.quarkus.logging.Log
 import io.quarkus.vertx.core.runtime.context.VertxContextSafetyToggle
-import io.smallrye.common.annotation.NonBlocking
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.infrastructure.Infrastructure
 import io.vertx.core.Vertx

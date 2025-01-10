@@ -5,6 +5,7 @@ import io.quarkus.logging.Log
 import io.quarkus.vertx.core.runtime.context.VertxContextSafetyToggle
 import io.smallrye.common.annotation.NonBlocking
 import io.vertx.core.Vertx
+import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.ws.rs.POST
 import jakarta.ws.rs.Path
@@ -13,6 +14,7 @@ import ru.km.weather.collector.entity.Subscriber
 import java.util.concurrent.CopyOnWriteArrayList
 
 @Path("/subscriber")
+@ApplicationScoped
 class WeatherSubscriberService {
     //    private var _subscribers = mutableListOf<Subscriber>()
     private var _subscribers = CopyOnWriteArrayList<Subscriber>()
@@ -20,37 +22,43 @@ class WeatherSubscriberService {
     val subscribers: List<Subscriber>
         get() = _subscribers.toList()
 
-//    @Startup
-//    suspend fun onInit() {
-//        coroutineScope {
-//            launch {
-//                Subscriber
-//                    .findAll()
-//                    .list()
-//                    .subscribe()
-//                    .with {
-//                        it.forEach { sub ->
-//                            _subscribers.add(sub)
-//                        }
-//                    }
-//            }
-//        }
-//    }
-//
+    @Inject
+    private lateinit var vertx: Vertx
+
+    //    @Startup
+    @NonBlocking
+    fun getSubscribersFormDb() {
+        Log.info("enter getSubscribersFormDb()")
+        VertxContextSafetyToggle.setContextSafe(vertx.getOrCreateContext(), true)
+        Panache.withTransaction { Subscriber.findAll().list() }
+            .subscribe()
+            .with {
+                Log.info("it.length=${it.size}")
+                it.forEach { sub ->
+                    _subscribers.add(sub)
+                    Log.info("sub form db: $sub")
+                }
+            }
+    }
+
 //    @Shutdown
+//    @NonBlocking
 //    suspend fun onShutdown() {
+//        Log.info("enter onShutdown()")
+//        /*
+//        VertxContextSafetyToggle.setContextSafe(vertx.getOrCreateContext(), true)
+//        Panache
+//            .withTransaction { Subscriber.persist(_subscribers) }
+////            .await() // как необходимо сохранять при заверешении работы - блокирующе или нет?
+////            .indefinitely()
+//            .subscribe()
+//            .with { Log.info("save on shutdown") }
+//         */
 //        coroutineScope {
-//            launch {
-//                Subscriber
-//                    .persist(_subscribers)
-//                    .await()
-//                    .indefinitely()
-//            }
+//            Subscriber.persist(_subscribers).await().indefinitely()
 //        }
 //    }
 
-    @Inject
-    private lateinit var vertx: Vertx
 
     @POST
     @NonBlocking
