@@ -1,6 +1,5 @@
 package ru.km.weather.collector.rest
 
-import io.smallrye.mutiny.Uni
 import jakarta.ws.rs.GET
 import jakarta.ws.rs.Path
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
@@ -12,21 +11,21 @@ import ru.km.weather.collector.dto.ForecastDto
 interface OpenWeatherMapClient {
     @GET
     @Path("/forecast")
-    fun getForecast(
+    suspend fun getForecast(
         @RestQuery("appid") apiKey: String,
         @RestQuery("lat") latitude: String,
         @RestQuery("lon") longitude: String,
         @RestQuery("units") measureUnits: String,
         @RestQuery("lang") language: String,
-    ): Uni<ForecastDto>
+    ): ForecastDto
 
     @GET
     @Path("/weather")
-    fun getCurrent(
+    suspend fun getCurrent(
         @RestQuery("appid") apiKey: String,
         @RestQuery("lat") latitude: String,
         @RestQuery("lon") longitude: String,
         @RestQuery("units") measureUnits: String,
         @RestQuery("lang") language: String,
-    ): Uni<CurrentDto>
+    ): CurrentDto
 }

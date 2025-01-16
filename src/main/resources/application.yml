@@ -1,6 +1,6 @@
 weather:
   api:
-    key: xxx
+    key: a7337a15a15764b5814e0ecf172a1f61
     units: metric
     language: ru
   city:

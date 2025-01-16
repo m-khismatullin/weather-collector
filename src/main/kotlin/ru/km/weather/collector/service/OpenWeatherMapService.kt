@@ -2,12 +2,10 @@ package ru.km.weather.collector.service
 
 import io.quarkus.hibernate.reactive.panache.Panache
 import io.quarkus.logging.Log
-import io.quarkus.vertx.core.runtime.context.VertxContextSafetyToggle
-import io.smallrye.mutiny.Uni
-import io.smallrye.mutiny.infrastructure.Infrastructure
-import io.vertx.core.Vertx
+import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import jakarta.persistence.LockModeType
 import org.eclipse.microprofile.reactive.messaging.Channel
 import org.eclipse.microprofile.reactive.messaging.Emitter
 import ru.km.weather.collector.entity.City
@@ -29,62 +27,56 @@ class OpenWeatherMapService {
     @Channel("weather")
     private lateinit var weatherEmitter: Emitter<Weather>
 
-    @Inject
-    private lateinit var vertx: Vertx
-
-    suspend fun getForecast(latitude: String, longitude: String): Uni<Forecast> {
-        Infrastructure.setDroppedExceptionHandler { err -> Log.error("getForecast error: ${err.cause}") }
+    suspend fun getForecast(latitude: String, longitude: String): Forecast {
         return openWeatherMapClientHelper
             .getForecastForPosition(latitude, longitude)
-            .onItem()
-            .transform { Forecast(it) }
-            .call { forecast ->
-                VertxContextSafetyToggle.setContextSafe(vertx.getOrCreateContext(), true)
+            .let { Forecast(it) }
+            .let { forecast ->
                 Panache.withTransaction {
-                    City.findById(forecast.city.id)
+                    City.findById(forecast.city.id, LockModeType.PESSIMISTIC_WRITE)
                         .onItem()
                         .ifNotNull()
                         .transform { city ->
                             city?.let {
+                                Log.debug("found forecast city: $it")
                                 forecast.city = city
-                                forecast.dataList.forEach { it.city = city }
                                 forecast
                             }
                         }
                         .onItem()
                         .ifNotNull()
                         .call { it -> it.persist<Forecast>() }
+                        .onFailure()
+                        .invoke { e -> Log.error(e) }
                         .onItem()
                         .ifNull()
                         .switchTo { forecast.persist<Forecast>() }
-                }
+                        .onFailure()
+                        .invoke { e -> Log.error(e) }
+                        .onItem()
+                        .invoke { forecast -> forecastEmitter.send(forecast) }
+
+                }.awaitSuspending()
+
             }
-            .onFailure()
-            .invoke { _ -> Log.error("forecast don't send to kafka!") }
-            .onItem()
-            .invoke { forecast -> forecastEmitter.send(forecast) }
     }
 
-    fun getWeather(latitude: String, longitude: String): Uni<Weather> {
-        Infrastructure.setDroppedExceptionHandler { err -> Log.error("getWeather error: ${err.cause}") }
+    suspend fun getWeather(latitude: String, longitude: String): Weather {
         return openWeatherMapClientHelper
             .getCurrentForPosition(latitude, longitude)
-            .onItem()
-            .transform { Weather(it) }
-            .call { weather ->
-                VertxContextSafetyToggle.setContextSafe(vertx.getOrCreateContext(), true)
+            .let { Weather(it) }
+            .let { weather ->
                 Panache.withTransaction {
-                    City.findById(weather.city.id)
+                    City.findById(weather.city.id, LockModeType.PESSIMISTIC_WRITE)
                         .onItem()
                         .ifNotNull()
                         .transform { city ->
                             city?.let {
-                                weather.city = city
+                                Log.debug("found weather city: $it")
+                                weather.city = it
                                 weather
                             }
                         }
-                        .onFailure()
-                        .invoke { e -> Log.error(e) }
                         .onItem()
                         .ifNotNull()
                         .call { it -> it.persist<Weather>() }
@@ -93,11 +85,11 @@ class OpenWeatherMapService {
                         .onItem()
                         .ifNull()
                         .switchTo { weather.persist<Weather>() }
-                }
+                        .onFailure()
+                        .invoke { e -> Log.error(e) }
+                        .onItem()
+                        .invoke { weather -> weatherEmitter.send(weather) }
+                }.awaitSuspending()
             }
-            .onFailure()
-            .invoke { e -> Log.error("weather don't send to kafka: ${e.cause}") }
-            .onItem()
-            .invoke { currentWeather -> weatherEmitter.send(currentWeather) }
     }
 }
