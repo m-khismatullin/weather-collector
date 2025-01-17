@@ -4,6 +4,8 @@ import io.quarkus.logging.Log
 import io.quarkus.scheduler.Scheduled
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import ru.km.weather.collector.service.OpenWeatherMapService
 import ru.km.weather.collector.service.WeatherSubscriberService
 import ru.km.weather.collector.util.WeatherConfig
@@ -20,31 +22,43 @@ class Scheduler {
     @Inject
     private lateinit var weatherSubscriberService: WeatherSubscriberService
 
-    //    @Scheduled(every = "1m")
-    @Scheduled(every = "15s")
+    private val mutex = Mutex()
+
+    @Scheduled(every = "1m")
+//    @Scheduled(every = "15s")
     suspend fun scheduleCurrent() {
         if (weatherSubscriberService.subscribers.isEmpty())
             weatherSubscriberService.getSubscribersFromDb()
 
-        weatherSubscriberService
-            .subscribers
-            .map { sub -> openWeatherMapService.getWeather(sub.lat, sub.lon) }
-            .forEach { weather ->
-                Log.info("current weather for ${weather.city} run at ${LocalDateTime.now()}")
-            }
+        mutex.withLock {
+            weatherSubscriberService
+                .subscribers
+                .map { sub ->
+                    val weather = openWeatherMapService.getWeather(sub.lat, sub.lon)
+                    weather
+                }
+                .forEach { weather ->
+                    Log.info("current weather for ${weather.city} run at ${LocalDateTime.now()}")
+                }
+        }
     }
 
-    //    @Scheduled(every = "30m")
-    @Scheduled(every = "1m")
+    @Scheduled(every = "30m")
+//    @Scheduled(every = "30s")
     suspend fun scheduleForecast() {
         if (weatherSubscriberService.subscribers.isEmpty())
             weatherSubscriberService.getSubscribersFromDb()
 
-        weatherSubscriberService
-            .subscribers
-            .map { sub -> openWeatherMapService.getForecast(sub.lat, sub.lon) }
-            .forEach {
-                Log.info("forecast scheduler for ${it.city} run at ${LocalDateTime.now()}")
-            }
+        mutex.withLock {
+            weatherSubscriberService
+                .subscribers
+                .map { sub ->
+                    val forecast = openWeatherMapService.getForecast(sub.lat, sub.lon)
+                    forecast
+                }
+                .forEach {
+                    Log.info("forecast scheduler for ${it.city} run at ${LocalDateTime.now()}")
+                }
+        }
     }
 }

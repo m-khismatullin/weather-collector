@@ -11,15 +11,15 @@ import jakarta.ws.rs.Path
 import kotlinx.coroutines.delay
 import ru.km.weather.collector.dto.SubscriberDto
 import ru.km.weather.collector.entity.Subscriber
-import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.ConcurrentHashMap
 
 @Path("/subscriber")
 @ApplicationScoped
 class WeatherSubscriberService {
-    private var _subscribers = CopyOnWriteArrayList<Subscriber>()
+    private var _subscribers = ConcurrentHashMap<Subscriber, Int>()
 
     val subscribers: List<Subscriber>
-        get() = _subscribers.toList()
+        get() = _subscribers.keys().toList()
 
     @Inject
     private lateinit var vertx: Vertx
@@ -30,7 +30,7 @@ class WeatherSubscriberService {
             .withTransaction { Subscriber.findAll().list() }
             .awaitSuspending()
             .forEach {
-                _subscribers.add(it)
+                _subscribers.putIfAbsent(it, 1)
                 Log.info("subscriber from db: $it")
             };
     }
@@ -41,14 +41,14 @@ class WeatherSubscriberService {
         delay(Math.round(Math.random() * 5000))
 
         Log.info("request from subscriber: ${subscriberDto.name}: lat=${subscriberDto.latitude} lon=${subscriberDto.longitude}")
-        return _subscribers
+        return subscribers
             .filter {
                 it.lat.toDouble() == subscriberDto.latitude && it.lon.toDouble() == subscriberDto.longitude
             }
             .map { "${it.desc} is already subscribed" }
             .ifEmpty {
                 val subscriber = Subscriber(subscriberDto)
-                _subscribers.add(subscriber)
+                _subscribers.putIfAbsent(subscriber, 1)
 
                 Panache
                     .withTransaction { subscriber.persist<Subscriber>() }

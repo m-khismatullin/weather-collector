@@ -37,4 +37,14 @@ class Subscriber() : PanacheEntity() {
     override fun toString(): String {
         return "Subscriber(id=$id, name='$name', latitude=$latitude, longitude=$longitude)"
     }
+
+    override fun equals(other: Any?): Boolean {
+        other ?: return false
+        if (this === other) return true
+        if (javaClass != other.javaClass) return false
+        other as Subscriber
+        return this.id != null && this.id == other.id
+    }
+
+    override fun hashCode(): Int = 170125
 }

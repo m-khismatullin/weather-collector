@@ -16,7 +16,8 @@ class Weather() : PanacheEntity() {
     val weatherDate: ZonedDateTime
         get() = Util.unixTimeToZoned(data.unixTime, city.timezone)
 
-    @ManyToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @ManyToOne(cascade = [], fetch = FetchType.EAGER)
+    @JoinColumn(updatable = false)
     lateinit var city: City
 
     @Embedded

@@ -33,31 +33,26 @@ class OpenWeatherMapService {
             .let { Forecast(it) }
             .let { forecast ->
                 Panache.withTransaction {
-                    City.findById(forecast.city.id, LockModeType.PESSIMISTIC_WRITE)
+                    City.findById(forecast.city.id, LockModeType.PESSIMISTIC_READ)
+                        .onItem()
+                        .ifNull()
+                        .switchTo { forecast.city.persist<City>() }
+                        .onFailure()
+                        .invoke { e -> Log.error(e.cause) }
                         .onItem()
                         .ifNotNull()
                         .transform { city ->
-                            city?.let {
-                                Log.debug("found forecast city: $it")
-                                forecast.city = city
-                                forecast
-                            }
+                            forecast.city = city
+                            forecast
                         }
                         .onItem()
                         .ifNotNull()
-                        .call { it -> it.persist<Forecast>() }
+                        .call { forecast -> forecast.persist<Forecast>() }
                         .onFailure()
-                        .invoke { e -> Log.error(e) }
-                        .onItem()
-                        .ifNull()
-                        .switchTo { forecast.persist<Forecast>() }
-                        .onFailure()
-                        .invoke { e -> Log.error(e) }
+                        .invoke { e -> Log.error(e.cause) }
                         .onItem()
                         .invoke { forecast -> forecastEmitter.send(forecast) }
-
                 }.awaitSuspending()
-
             }
     }
 
@@ -67,26 +62,22 @@ class OpenWeatherMapService {
             .let { Weather(it) }
             .let { weather ->
                 Panache.withTransaction {
-                    City.findById(weather.city.id, LockModeType.PESSIMISTIC_WRITE)
+                    City.findById(weather.city.id, LockModeType.PESSIMISTIC_READ)
+                        .onItem()
+                        .ifNull()
+                        .switchTo { weather.city.persist<City>() }
+                        .onFailure()
+                        .invoke { e -> Log.error(e.cause) }
                         .onItem()
                         .ifNotNull()
                         .transform { city ->
-                            city?.let {
-                                Log.debug("found weather city: $it")
-                                weather.city = it
-                                weather
-                            }
+                            weather.city = city
+                            weather
                         }
                         .onItem()
-                        .ifNotNull()
-                        .call { it -> it.persist<Weather>() }
+                        .call { weather -> weather.persist<Weather>() }
                         .onFailure()
-                        .invoke { e -> Log.error(e) }
-                        .onItem()
-                        .ifNull()
-                        .switchTo { weather.persist<Weather>() }
-                        .onFailure()
-                        .invoke { e -> Log.error(e) }
+                        .invoke { e -> Log.error(e.cause) }
                         .onItem()
                         .invoke { weather -> weatherEmitter.send(weather) }
                 }.awaitSuspending()
